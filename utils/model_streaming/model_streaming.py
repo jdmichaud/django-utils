@@ -51,7 +51,7 @@ def CharField_serializer(instance, **kwargs):
     return Choice_serializer(instance, **kwargs)
   else:
     # Else, just return the string value
-    return str(instance)
+    return instance
 
 
 def BitField_serializer(instance, **kwargs):
