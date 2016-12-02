@@ -1,8 +1,6 @@
 import json
 from django.db import models
-from bitfield import BitField
 from utils.model_streaming.to_dict import choices_to_dict
-from utils.model_streaming.to_dict import bitfield_to_dict
 
 
 def filter_fields(included_fields, excluded_fields, model_name, fields):
@@ -90,14 +88,13 @@ def to_dict(instance, **kwargs):
 serializer_map = {
   models.CharField.__name__:          CharField_serializer,
 #  models.BooleanField.__name__:       BooleanField_serializer,
-  BitField.__name__:                  BitField_serializer,
   models.ForeignKey.__name__:         to_dict,
   models.OneToOneField.__name__:      OneToOneField_serializer,
   models.ManyToManyField.__name__:    ManyToManyField_serializer,
   models.DateField.__name__:           DateTimeField_serializer,
   models.DateTimeField.__name__:      DateTimeField_serializer,
-  models.fields.related.ForeignRelatedObjectsDescriptor.__name__: RelatedField_serializer,
-  models.fields.related.RelatedObject.__name__: RelatedField_serializer,
+  models.fields.related.ReverseManyToOneDescriptor.__name__: RelatedField_serializer,
+  models.fields.related.ForeignObjectRel.__name__: RelatedField_serializer,
   'default':                          default_serializer
 }
 
