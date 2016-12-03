@@ -1,3 +1,4 @@
+import itertools
 import json
 from django.db import models
 from utils.model_streaming.to_dict import choices_to_dict
@@ -17,8 +18,8 @@ def filter_fields(included_fields, excluded_fields, model_name, fields):
   if included_fields is not None and excluded_fields is not None:
     raise ValueError('included AND excluded fields specified')
   # Here we filter out all the field not related to this particular model
-  included_fields = [name.split('.')[1] for name in included_fields if name.startswith(model_name + '.')] if included_fields else None
-  excluded_fields = [name.split('.')[1] for name in excluded_fields if name.startswith(model_name + '.')] if excluded_fields else None
+  included_fields = [name.split('.')[-1] for name in included_fields if name.startswith(model_name + '.')] if included_fields else None
+  excluded_fields = [name.split('.')[-1] for name in excluded_fields if name.startswith(model_name + '.')] if excluded_fields else None
   # Then we filter according to the directives.
   if included_fields is not None:
     fields = filter(lambda field: field.name in included_fields, fields)
@@ -95,6 +96,7 @@ serializer_map = {
   models.DateTimeField.__name__:      DateTimeField_serializer,
   models.fields.related.ReverseManyToOneDescriptor.__name__: RelatedField_serializer,
   models.fields.related.ForeignObjectRel.__name__: RelatedField_serializer,
+  models.fields.reverse_related.ManyToOneRel.__name__: RelatedField_serializer,
   'default':                          default_serializer
 }
 
@@ -140,7 +142,7 @@ def model_to_dict(instance, **kwargs):
   # max_depth = kwargs.get('max_depth', 100)
   # enumerate all the fields (normal fields, foreign key, manyto..., related fields)
   opts = instance._meta
-  fields = opts.concrete_fields + opts.virtual_fields + opts.many_to_many + opts.get_all_related_objects()
+  fields = list(itertools.chain(opts.get_fields(include_hidden=True)))
   # Filter the fields
   fields = filter_fields(included_fields, excluded_fields, instance.__class__.__name__, fields)
   # for earch fields, call the appropriate serializer
